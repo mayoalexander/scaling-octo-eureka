@@ -1,5 +1,7 @@
 # Tree API
 
+![Tests](https://github.com/YOUR_USERNAME/YOUR_REPO_NAME/workflows/Tests/badge.svg)
+
 A simple Laravel API that manages tree data structures. Built for the coding challenge requirements.
 
 ## What it does
@@ -97,6 +99,15 @@ Run the tests to make sure everything works:
 ```bash
 php artisan test
 ```
+
+### CI/CD Pipeline
+
+The project includes a GitHub Actions workflow that automatically runs tests on:
+- Every push to `main` or `develop` branches
+- Every pull request to `main`
+- Multiple PHP versions (8.2, 8.3) to ensure compatibility
+
+Tests run in a clean Ubuntu environment with SQLite database, mimicking the development setup.
 
 ## Try it out
 
