@@ -19,5 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed the tree data
+        $this->call(TreeSeeder::class);
     }
 }
