@@ -1,23 +1,19 @@
-# Laravel Tree API
+# Tree API
 
-A Laravel-based HTTP server that handles tree data structures with full CRUD operations, persistence, and comprehensive testing.
+A simple Laravel API that manages tree data structures. Built for the coding challenge requirements.
 
-## Features
+## What it does
 
-- **RESTful API endpoints** for tree data management
-- **Hierarchical tree structure** with parent-child relationships
-- **Database persistence** using SQLite (development) or MySQL/PostgreSQL (production)
-- **Comprehensive testing** with PHPUnit
-- **Input validation** and error handling
-- **Nested JSON response format** for easy consumption
-- **Production-ready** with proper error handling and logging
+- Two API endpoints for managing trees
+- Stores data in a SQLite database (persists between server restarts)
+- Includes tests to verify everything works
+- Returns nested JSON structure as specified
 
-## API Endpoints
+## The API
 
 ### GET /api/tree
-Returns an array of all trees that exist in the database in nested format.
+Gets all trees from the database in nested format.
 
-**Response Example:**
 ```json
 [
   {
@@ -46,9 +42,9 @@ Returns an array of all trees that exist in the database in nested format.
 ```
 
 ### POST /api/tree
-Creates a new node and attaches it to the specified parent node in the tree.
+Creates a new node. You can create a root node (no parentId) or attach to an existing parent.
 
-**Request Body:**
+**Request:**
 ```json
 {
   "label": "cat's child",
@@ -56,7 +52,7 @@ Creates a new node and attaches it to the specified parent node in the tree.
 }
 ```
 
-**Response Example:**
+**Response:**
 ```json
 {
   "id": 8,
@@ -67,98 +63,49 @@ Creates a new node and attaches it to the specified parent node in the tree.
 }
 ```
 
-**Validation Rules:**
-- `label`: Required, string, max 255 characters
-- `parentId`: Optional, integer, must exist in trees table
+## Quick Start
 
-## Technology Stack
+**Prerequisites:** PHP 8.2+, Composer
 
-- **Laravel 12**: Modern PHP framework
-- **SQLite**: Database (development)
-- **PHPUnit**: Testing framework
-- **Eloquent ORM**: Database interactions
-- **JSON API**: RESTful responses
-
-## Installation & Setup
-
-### Prerequisites
-- PHP 8.2 or higher
-- Composer
-- SQLite extension for PHP
-
-### Installation Steps
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd laravel-api-tree/example-api
-   ```
-
-2. **Install dependencies:**
+1. **Install dependencies:**
    ```bash
    composer install
    ```
 
-3. **Environment setup:**
+2. **Set up environment:**
    ```bash
    cp .env.example .env
    php artisan key:generate
    ```
 
-4. **Database setup:**
+3. **Set up database:**
    ```bash
-   # Create SQLite database
    touch database/database.sqlite
-   
-   # Run migrations
-   php artisan migrate
-   
-   # Seed with sample data (optional)
-   php artisan db:seed
+   php artisan migrate:fresh --seed
    ```
 
-## Running the Server
-
-### Development Server
-```bash
-php artisan serve
-```
-The server will be available at `http://localhost:8000`
-
-### Production Deployment
-For production, use a proper web server like Nginx or Apache with PHP-FPM. Configure your web server to point to the `public/` directory.
+4. **Start the server:**
+   ```bash
+   php artisan serve
+   ```
+   
+   Server runs at `http://localhost:8000`
 
 ## Testing
 
-### Run All Tests
+Run the tests to make sure everything works:
 ```bash
 php artisan test
 ```
 
-### Run Tree API Tests Specifically
-```bash
-php artisan test --filter TreeApiTest
-```
-
-### Test Coverage
-The test suite includes:
-- ✅ GET endpoint returns nested tree structure
-- ✅ POST endpoint creates new nodes
-- ✅ POST endpoint creates root nodes (without parent)
-- ✅ Validation error handling
-- ✅ Empty tree handling
-- ✅ Multiple root nodes support
-
-## API Usage Examples
-
-### Using cURL
+## Try it out
 
 **Get all trees:**
 ```bash
-curl -X GET http://localhost:8000/api/tree
+curl http://localhost:8000/api/tree
 ```
 
-**Create a new root node:**
+**Create a root node:**
 ```bash
 curl -X POST http://localhost:8000/api/tree \
   -H "Content-Type: application/json" \
@@ -172,145 +119,28 @@ curl -X POST http://localhost:8000/api/tree \
   -d '{"label": "child node", "parentId": 1}'
 ```
 
-### Using JavaScript (fetch)
+## Demo Script
 
-```javascript
-// Get all trees
-const trees = await fetch('/api/tree').then(r => r.json());
-
-// Create a new node
-const newNode = await fetch('/api/tree', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ label: 'new node', parentId: 1 })
-}).then(r => r.json());
+For a complete demonstration, run:
+```bash
+./demo.sh
 ```
 
-## Database Schema
+This script will set up everything, run tests, and demonstrate the API with examples.
 
-### Trees Table
-```sql
-CREATE TABLE trees (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label VARCHAR(255) NOT NULL,
-    parent_id INTEGER NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-    FOREIGN KEY (parent_id) REFERENCES trees(id) ON DELETE CASCADE
-);
-```
+## How it works
 
-## Project Structure
+The API uses a simple database table with a `parent_id` column to create the tree structure. The GET endpoint recursively builds the nested JSON response, and the POST endpoint validates input and creates new nodes.
 
-```
-app/
-├── Http/Controllers/
-│   └── TreeController.php      # API controller
-├── Models/
-│   └── Tree.php               # Tree model with relationships
-database/
-├── migrations/
-│   └── *_create_trees_table.php
-├── seeders/
-│   └── TreeSeeder.php         # Sample data seeder
-tests/
-├── Feature/
-│   └── TreeApiTest.php        # API endpoint tests
-routes/
-└── api.php                    # API routes definition
-```
+**Key files:**
+- `app/Http/Controllers/TreeController.php` - The API logic
+- `app/Models/Tree.php` - Database model
+- `tests/Feature/TreeApiTest.php` - Tests
+- `database/migrations/...create_trees_table.php` - Database schema
 
-## Error Handling
+## Notes
 
-The API includes comprehensive error handling:
-
-- **422 Validation Error**: Invalid input data
-- **404 Not Found**: Parent node doesn't exist
-- **500 Server Error**: Database or server issues
-
-Example error response:
-```json
-{
-  "error": "Validation failed",
-  "messages": {
-    "label": ["The label field is required."]
-  }
-}
-```
-
-## Performance Considerations
-
-- Uses database indexes on `parent_id` for efficient queries
-- Implements proper foreign key constraints
-- Uses Eloquent relationships for optimized queries
-- Includes database connection pooling in production
-
-## Security Features
-
-- Input validation and sanitization
-- SQL injection protection via Eloquent ORM
-- CSRF protection (disabled for API endpoints)
-- Rate limiting (can be enabled in production)
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Write tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- Data persists between server restarts (SQLite database)
+- Input validation prevents empty labels and invalid parent IDs
+- Tests cover all the main functionality
+- The demo script shows everything working together
